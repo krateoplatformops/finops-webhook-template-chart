@@ -1,0 +1,40 @@
+{{- $secret := lookup "v1" "Secret" .Values.certsSecretRef.namespace .Values.certsSecretRef.name }}
+{{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" (include "finops-webhook-template-chart.fullname" .) .Release.Namespace }}
+apiVersion: {{ include "finops-webhook-template-chart.admissionregistrationApiVersion" . }}
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "finops-webhook-template-chart.fullname" . }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "finops-webhook-template-chart.labels" . | nindent 4 }}
+webhooks:
+  - name: webhook.openpolicyagent.org
+    admissionReviewVersions: ["v1", "v1beta1"]
+    {{- with .Values.namespaceSelector }}
+    namespaceSelector:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    failurePolicy: Ignore
+    rules:
+      {{- toYaml .Values.rules | nindent 6 }}
+    clientConfig:
+      {{- if .Values.useHttps }}
+      {{- if .Values.generatedCerts }}
+      {{- if and $secret $secret.data.caBundle }}
+      caBundle: {{ $secret.data.caBundle }} 
+      {{- else }}
+      caBundle: {{ b64enc .Values.CA }}
+      {{- end}}
+      {{- end }}
+      {{- end }}
+      service:
+        name: {{ .Values.service.name }}
+        namespace: {{ .Values.service.namespace }}
+        port: {{ .Values.service.port }}
+    sideEffects: None
+    {{- if .Values.timeoutSeconds }}
+    timeoutSeconds: {{ .Values.timeoutSeconds }}
+    {{- end }}

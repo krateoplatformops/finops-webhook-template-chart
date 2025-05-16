@@ -1,0 +1,42 @@
+# Admission controller configuration.
+fullnameOverride: mutating-webhook-opatests
+
+# To set annotations on all admissionController resources (Secret/Certificate/Issuer/AdmissionController)
+# annotations:
+#   example: value
+
+# Adds a namespace selector to the admission controller webhook
+namespaceSelector:
+  matchExpressions:
+    - {key: openpolicyagent.org/webhook, operator: NotIn, values: [ignore]}
+
+# To restrict the kinds of operations and resources that are subject to OPA
+# policy checks, see the settings below.
+rules:
+  - operations: ["UPDATE"]
+    apiGroups: ["finops.krateo.io"]
+    apiVersions: ["v1"]
+    resources: ["opatests"]
+    scope: "Namespaced"
+
+useHttps: true
+
+generatedCerts: true # If this is set to true, the chart will look for the certsSecretRef secret
+# The webhook lookup will look for the field "caBundle"
+certsSecretRef:
+  name: opa-kube-mgmt-cert
+  namespace: opa-system
+# Otherwise it will use the CA Bundle specified in CA
+CA: ""
+
+service:
+  name: opa-kube-mgmt
+  namespace: opa-system
+  port: 8181
+
+
+# Timeout for a webhook call in seconds.
+# Starting in kubernetes 1.14 you can set the timeout and it is
+# encouraged to use a small timeout for webhooks. If the webhook call times out, the request
+# the request is handled according to the webhook'sfailure policy.
+# timeoutSeconds: 20
