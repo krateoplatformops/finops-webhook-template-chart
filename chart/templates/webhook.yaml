@@ -1,9 +1,14 @@
 {{- $secret := lookup "v1" "Secret" .Values.certsSecretRef.namespace .Values.certsSecretRef.name }}
-{{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" (include "finops-webhook-template-chart.fullname" .) .Release.Namespace }}
+{{- $chartNameNoHyphens := .Chart.Name | replace "-" "" -}}
+{{- $versionWithHyphens := .Chart.Version | replace "." "-" -}}
+{{- $fullName := printf "finops-webhook-%s-v%s" $chartNameNoHyphens $versionWithHyphens -}}
+{{- $name := $fullName | trunc 63 | trimSuffix "-" -}}
+{{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" $name .Release.Namespace }}
+{{- if not $webhook }}
 apiVersion: {{ include "finops-webhook-template-chart.admissionregistrationApiVersion" . }}
 kind: MutatingWebhookConfiguration
 metadata:
-  name: {{ include "finops-webhook-template-chart.fullname" . }}
+  name: {{ $name }}
   {{- if .Values.annotations }}
   annotations:
     {{- toYaml .Values.annotations | nindent 4 }}
@@ -11,7 +16,7 @@ metadata:
   labels:
     {{- include "finops-webhook-template-chart.labels" . | nindent 4 }}
 webhooks:
-  - name: webhook.openpolicyagent.org
+  - name: {{ $fullName }}
     admissionReviewVersions: ["v1", "v1beta1"]
     {{- with .Values.namespaceSelector }}
     namespaceSelector:
@@ -19,12 +24,20 @@ webhooks:
     {{- end }}
     failurePolicy: Ignore
     rules:
-      {{- toYaml .Values.rules | nindent 6 }}
+      - operations:
+        - "UPDATE"
+        apiGroups:
+        - "composition.krateo.io"
+        apiVersions:
+        - v{{ .Chart.Version | replace "." "-" }}
+        resources:
+        - {{ .Chart.Name | replace "-" "" }}s
+        scope: "Namespaced"
     clientConfig:
       {{- if .Values.useHttps }}
       {{- if .Values.generatedCerts }}
       {{- if and $secret $secret.data.caBundle }}
-      caBundle: {{ $secret.data.caBundle }} 
+      caBundle: {{ $secret.data.caBundle }}
       {{- else }}
       caBundle: {{ b64enc .Values.CA }}
       {{- end}}
@@ -38,3 +51,4 @@ webhooks:
     {{- if .Values.timeoutSeconds }}
     timeoutSeconds: {{ .Values.timeoutSeconds }}
     {{- end }}
+{{- end }}

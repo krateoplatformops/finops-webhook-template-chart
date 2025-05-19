@@ -9,16 +9,7 @@ fullnameOverride: mutating-webhook-opatests
 namespaceSelector:
   matchExpressions:
     - {key: openpolicyagent.org/webhook, operator: NotIn, values: [ignore]}
-
-# To restrict the kinds of operations and resources that are subject to OPA
-# policy checks, see the settings below.
-rules:
-  - operations: ["UPDATE"]
-    apiGroups: ["finops.krateo.io"]
-    apiVersions: ["v1"]
-    resources: ["opatests"]
-    scope: "Namespaced"
-
+    
 useHttps: true
 
 generatedCerts: true # If this is set to true, the chart will look for the certsSecretRef secret
