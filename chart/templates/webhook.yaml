@@ -1,5 +1,5 @@
 {{- $secret := lookup "v1" "Secret" .Values.certsSecretRef.namespace .Values.certsSecretRef.name }}
-{{- $apiVersion := split "." .Values.global.compositionApiVersion -}}
+{{- $apiVersion := split "/" .Values.global.compositionApiVersion -}}
 {{- $fullName := printf "finops-webhook-%s-%s" $apiVersion._0 $apiVersion._1 -}}
 {{- $name := $fullName | trunc 63 | trimSuffix "-" -}}
 {{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" $name .Release.Namespace }}
@@ -15,7 +15,7 @@ metadata:
   labels:
     {{- include "finops-webhook-template-chart.labels" . | nindent 4 }}
 webhooks:
-  - name: {{ $fullName }}
+  - name: "webhook.openpolicyagent.org"
     admissionReviewVersions: ["v1", "v1beta1"]
     {{- with .Values.namespaceSelector }}
     namespaceSelector:
