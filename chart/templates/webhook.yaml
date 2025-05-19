@@ -1,7 +1,6 @@
 {{- $secret := lookup "v1" "Secret" .Values.certsSecretRef.namespace .Values.certsSecretRef.name }}
-{{- $chartNameNoHyphens := .Chart.Name | replace "-" "" -}}
-{{- $versionWithHyphens := .Chart.Version | replace "." "-" -}}
-{{- $fullName := printf "finops-webhook-%s-v%s" $chartNameNoHyphens $versionWithHyphens -}}
+{{- $apiVersion := split "." .Values.global.compositionApiVersion -}}
+{{- $fullName := printf "finops-webhook-%s-%s" $apiVersion._0 $apiVersion._1 -}}
 {{- $name := $fullName | trunc 63 | trimSuffix "-" -}}
 {{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" $name .Release.Namespace }}
 {{- if not $webhook }}
@@ -27,11 +26,11 @@ webhooks:
       - operations:
         - "UPDATE"
         apiGroups:
-        - "composition.krateo.io"
+        - {{ $apiVersion._0 }}
         apiVersions:
-        - v{{ .Chart.Version | replace "." "-" }}
+        - {{ $apiVersion._1 }}
         resources:
-        - {{ .Chart.Name | replace "-" "" }}s
+        - {{ .Values.global.compositionResource }}
         scope: "Namespaced"
     clientConfig:
       {{- if .Values.useHttps }}
