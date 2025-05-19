@@ -31,3 +31,12 @@ service:
 # encouraged to use a small timeout for webhooks. If the webhook call times out, the request
 # the request is handled according to the webhook'sfailure policy.
 # timeoutSeconds: 20
+
+global:
+  compositionApiVersion: compositionApiVersion
+  compositionId: compositionId
+  compositionKind: compositionKind
+  compositionName: compositionName
+  compositionNamespace: compositionNamespace
+  compositionResource: compositionResource
+  krateoNamespace: krateoNamespace
