@@ -15,7 +15,7 @@ metadata:
   labels:
     {{- include "finops-webhook-template-chart.labels" . | nindent 4 }}
 webhooks:
-  - name: {{ $fullName }}
+  - name: {{ $name }}
     admissionReviewVersions: ["v1", "v1beta1"]
     {{- with .Values.namespaceSelector }}
     namespaceSelector:
