@@ -2,6 +2,8 @@
 {{- $apiVersion := split "/" .Values.global.compositionApiVersion -}}
 {{- $fullName := printf "finops-webhook-%s-%s" .Values.global.compositionResource $apiVersion._1 -}}
 {{- $name := $fullName | trunc 63 | trimSuffix "-" -}}
+{{- $webhookFullname := printf "finops.krateo.webhook.%s.%s" .Values.global.compositionResource $apiVersion._1 -}}
+{{- $webhookName := $webhookFullname | trunc 63 | trimSuffix "-" | trimSuffix "." -}}
 {{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" "" $name }}
 {{- if not $webhook }}
 apiVersion: {{ include "finops-webhook-template-chart.admissionregistrationApiVersion" . }}
@@ -15,7 +17,7 @@ metadata:
   labels:
     {{- include "finops-webhook-template-chart.labels" . | nindent 4 }}
 webhooks:
-  - name: {{ $name }}
+  - name: {{ $webhookName }}
     admissionReviewVersions: ["v1", "v1beta1"]
     {{- with .Values.namespaceSelector }}
     namespaceSelector:
