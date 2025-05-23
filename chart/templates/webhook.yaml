@@ -1,8 +1,8 @@
 {{- $secret := lookup "v1" "Secret" .Values.certsSecretRef.namespace .Values.certsSecretRef.name }}
-{{- $apiVersion := split "." .Values.global.compositionApiVersion -}}
-{{- $fullName := printf "finops-webhook-%s-%s" $apiVersion._0 $apiVersion._1 -}}
+{{- $apiVersion := split "/" .Values.global.compositionApiVersion -}}
+{{- $fullName := printf "finops-webhook-%s-%s" .Values.global.compositionResource $apiVersion._1 -}}
 {{- $name := $fullName | trunc 63 | trimSuffix "-" -}}
-{{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" $name .Release.Namespace }}
+{{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" "" $name }}
 {{- if not $webhook }}
 apiVersion: {{ include "finops-webhook-template-chart.admissionregistrationApiVersion" . }}
 kind: MutatingWebhookConfiguration
