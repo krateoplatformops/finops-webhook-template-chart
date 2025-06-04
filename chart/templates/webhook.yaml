@@ -4,7 +4,7 @@
 {{- $name := $fullName | trunc 63 | trimSuffix "-" -}}
 {{- $webhookFullname := printf "finops.krateo.webhook.%s.%s" .Values.global.compositionResource $apiVersion._1 -}}
 {{- $webhookName := $webhookFullname | trunc 63 | trimSuffix "-" | trimSuffix "." -}}
-{{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" "" $name }}
+{{- $webhook := lookup (include "finops-webhook-template-chart.admissionregistrationApiVersion" .) "MutatingWebhookConfiguration" "a" $name }}
 {{- if not $webhook }}
 apiVersion: {{ include "finops-webhook-template-chart.admissionregistrationApiVersion" . }}
 kind: MutatingWebhookConfiguration
@@ -12,7 +12,6 @@ metadata:
   name: {{ $name }}
   {{- if .Values.annotations }}
   annotations:
-    helm.sh/resource-policy: keep
     {{- toYaml .Values.annotations | nindent 4 }}
   {{- end }}
   labels:
