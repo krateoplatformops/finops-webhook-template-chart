@@ -12,7 +12,6 @@ metadata:
   name: {{ $name }}
   {{- if .Values.annotations }}
   annotations:
-    helm.sh/resource-policy: keep
     {{- toYaml .Values.annotations | nindent 4 }}
   {{- end }}
   labels:

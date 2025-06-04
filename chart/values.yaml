@@ -2,8 +2,8 @@
 fullnameOverride: mutating-webhook-opatests
 
 # To set annotations on all admissionController resources (Secret/Certificate/Issuer/AdmissionController)
-# annotations:
-#   example: value
+annotations:
+  helm.sh/resource-policy: keep
 
 # Adds a namespace selector to the admission controller webhook
 namespaceSelector:
